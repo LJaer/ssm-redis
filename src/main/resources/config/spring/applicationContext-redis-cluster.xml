@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/rabbit
+	   http://www.springframework.org/schema/rabbit/spring-rabbit-1.4.xsd
+	   http://www.springframework.org/schema/context
+	   http://www.springframework.org/schema/context/spring-context.xsd"
+	default-lazy-init="true">
+
+	<!-- 由于 spring 只能存在一个 context:property-placeholder -->
+	<!-- <context:property-placeholder location="classpath:config/redis/shardredis.properties"/> -->
+		
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="minIdle" value="1" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="maxIdle" value="${shardredis.maxIdle}" />
+		<property name="maxTotal" value="${shardredis.maxActive}" />
+		<property name="maxWaitMillis" value="${shardredis.maxWait}" />
+		<property name="testOnBorrow" value="${shardredis.testOnBorrow}" />
+	</bean>
+	
+	<bean id="jedisCluster" class="cn.ljaer.ssm.redis.JedisClusterFactory">
+		<property name="addressConfig">	
+			<value>classpath:config/redis/shardredis.properties</value>
+		</property>
+		<property name="addressKeyPrefix" value="address" /> <!-- 属性文件里 key的前缀 -->
+		<property name="timeout" value="300000" />
+		<property name="maxRedirections" value="6" />
+		<property name="genericObjectPoolConfig" ref="jedisPoolConfig" />
+		<property name="password" value="${shardredis.pass}" />
+	</bean>
+	
+	<bean id="utilJedis" class="cn.ljaer.ssm.redis.UtilJedis" />
+	
+</beans>  
